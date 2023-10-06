@@ -47,6 +47,7 @@ host = {
     "address": []
 }
 
+#not yet used
 acl_remark = (
     r'^access-list\s(?P<policy_name>[A-Za-z0-9\-\_]+)'
     r'\s+'
@@ -59,7 +60,7 @@ regex_ip_address = (
 )
 
 #when creating regex using {} then any regex expressions containing {} needs to be moved to variable
-#otherwise when using .format it will through and error while complile
+#otherwise when using .format it will through out an error while compliling the code
 acl_general_structure = (
     r'access-list\s+(?P<policy_name>[\w\-]+)\s+extended\s+(?P<action>permit|deny)'
     r'\s'
