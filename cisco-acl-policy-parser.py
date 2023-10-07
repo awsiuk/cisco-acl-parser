@@ -102,18 +102,18 @@ with open(f_in_name, "r", encoding="utf8") as f:
             if previous_policy_name!=temp_data["policy_name"]:
                 rule_count=1
             temp_policy["policy-name"]=temp_data["policy_name"]+"#"+str(rule_count)
-            temp_policy["source-address"]=temp_data["source"]
-            temp_policy["destination-address"]=temp_data["destination"]
+            temp_policy["source-address"].append(temp_data["source"])
+            temp_policy["destination-address"].append(temp_data["destination"])
             temp_policy["action"]=temp_data["action"]
             previous_policy_name=temp_data["policy_name"]
             if temp_data["service"]:
                 temp_service=temp_data["service"].split(" ")
                 if temp_service[0]=='eq':
-                    temp_policy["application"]=temp_data["protocol"]+"/"+temp_service[1]
+                    temp_policy["application"].append(temp_data["protocol"]+"/"+temp_service[1])
                 else:
-                    temp_policy["application"]=temp_data["protocol"]+"/"+temp_data["service"]
+                    temp_policy["application"].append(temp_data["protocol"]+"/"+temp_data["service"])
             else:
-                temp_policy["application"]="any"
+                temp_policy["application"].append("any")
             policies_set.append(temp_policy)
             rule_count+=1
 
