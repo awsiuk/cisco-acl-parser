@@ -56,21 +56,25 @@ acl_remark = (
 
 
 regex_ip_address = ( 
-    r'([0-9]{1,3}\.){3}[0-9]{1,3}'
+    r'([\d]{1,3}\.){3}[\d]{1,3}'
+)
+
+regex_mask = (
+    r'(255\.255\.255\.[\d]{1,3})|(255\.255\.[\d]{1,3}\.0)|(255\.[\d]{1,3}\.0\.0)|([\d]{1,3}\.0\.0\.0)'
 )
 
 #when creating regex using {} then any regex expressions containing {} needs to be moved to variable
 #otherwise when using .format it will through out an error while compliling the code
 acl_general_structure = (
-    r'access-list\s+(?P<policy_name>[\w\-]+)\s+extended\s+(?P<action>permit|deny)'
+    r'access-list\s+(?P<policy_name>[\w-]+)\s+extended\s+(?P<action>permit|deny)'
     r'\s'
-    r'(?P<protocol>(\w+)|object-group\s[\w]+)'
+    r'(?:object-group\s|object\s)?(?P<protocol>[\w-]+)'
     r'\s'
-    r'(?P<source>(?:host\s({ipaddr}))|(?:object-group\s[\w\-]+)|(?:{ipaddr}\s{ipaddr})|any)'
+    r'(?:host\s|object-group\s|object\s)?(?P<source>(({ipaddr})(?:\s{mask})?)|any|[\w\.-]+)'
     r'\s'
-    r'(?P<destination>(?:host\s({ipaddr}))|(?:object-group\s[\w\-]+)|(?:{ipaddr}\s{ipaddr})|any)'
+    r'(?:host\s|object-group\s|object\s)?(?P<destination>(?:(?:{ipaddr})(?:\s{mask})?)|any|[\w\.-]+)'
     r'(?:\s|$)'
-    r'(?:(?P<service>echo|(?:object-group\s[\w\-]+)|(?:eq\s[\w]+)))?'.format(ipaddr=regex_ip_address)
+    r'(?:(?:object-group|eq)?\s?(?P<service>[\w-]+))?'.format(ipaddr=regex_ip_address,mask=regex_mask)
 )
 
 #main script
