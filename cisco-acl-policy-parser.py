@@ -55,11 +55,10 @@ zones = {
     "zone": ""
 }
 
-#not yet used
 acl_remark = (
     r'^access-list\s(?P<policy_name>[A-Za-z0-9\-\_]+)'
     r'\s+'
-    r'remark\s+(?P<remark>.+)'
+    r'remark\s+(?P<remark>[\w\s:-]+)'
 )
 
 regex_ip_address = ( 
@@ -100,7 +99,7 @@ def mask_convert(subnet_mask: str) -> str:
     return prefix
 
 #main script
-#Ensuring that there are arguments provided to the scrip and not let run without it
+#Ensuring that there are arguments provided to the script and not let run without it
 parser = argparse.ArgumentParser(prog='cisco-acl-policy-parser',description='Script takes 1 argument of a config file (typically .conf) and outputs CSV file with ".csv" extension with the same name as orginal file.',epilog='by Lukasz Awsiukiewicz, biuro@la-tech.pl')
 parser.add_argument('-f', '--file', help='%(prog)s --filein=<CISCO IOS format conf file - typically it contain ! in content of a file >', required=True)
 a1 = parser.parse_args()
@@ -127,8 +126,8 @@ with open(f_in_name, "r", encoding="utf8") as f:
             #there are 2 approaches:
             #1. create 1 policy per exact ACL name but keep adding into that policy a rules. Please note that cisco 
             #   adds action after each rule
-            #2. create new policy per each ACL --> this is the approach teken here. it migbt be important for asset
-            #    management where tere mighe be multiple ownere for the rules.            
+            #2. create new policy per each ACL --> this is the approach teken here. It migbt be important for asset
+            #    manaagement where there might be multiple owneres for the rules.            
             temp_policy["policy-name"]=temp_data["policy_name"]+"#"+str(rule_count)
             if ' ' in temp_data["source"]:
                 temp_policy["source-address"].append( temp_data["source"].split(" ")[0] + mask_convert(temp_data["source"].split(" ")[1]) )
@@ -148,6 +147,8 @@ with open(f_in_name, "r", encoding="utf8") as f:
                     temp_policy["application"].append(temp_data["protocol"]+"/"+temp_data["service"])
             else:
                 temp_policy["application"].append("any")
+            if remark_description:
+                temp_policy["description"].append(remark_description)
             policies_set.append(temp_policy)
             rule_count+=1
         result=re.match(acl_apply_to,line)
@@ -158,6 +159,13 @@ with open(f_in_name, "r", encoding="utf8") as f:
             temp_zone["direction"]=temp_apply["direction"]
             temp_zone["zone"]=temp_apply["zone"]
             zones_set.append(temp_zone)
+        #handling remarks
+        result=re.match(acl_remark,line)
+        if result: 
+            temp_remark=result.groupdict()
+            remark_description=temp_remark["remark"]
+        else:
+            remark_description=""
 
 for entry in policies_set:
     for zone_obj in zones_set:
