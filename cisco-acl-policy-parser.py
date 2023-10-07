@@ -70,9 +70,9 @@ acl_general_structure = (
     r'\s'
     r'(?:object-group\s|object\s)?(?P<protocol>[\w-]+)'
     r'\s'
-    r'(?:host\s|object-group\s|object\s)?(?P<source>(({ipaddr})(?:\s{mask})?)|any|[\w\.-]+)'
+    r'((host\s)|(object-group\s)|(object\s))?(?P<source>((?<=host\s){ipaddr})|({ipaddr}\s({mask}))|any|[\w\.-]+)'
     r'\s'
-    r'(?:host\s|object-group\s|object\s)?(?P<destination>(?:(?:{ipaddr})(?:\s{mask})?)|any|[\w\.-]+)'
+    r'((host\s)|(object-group\s)|(object\s))?(?P<destination>((?<=host\s){ipaddr})|({ipaddr}\s({mask}))|any|[\w\.-]+)'
     r'(?:\s|$)'
     r'(?:(?:object-group|eq)?\s?(?P<service>[\w-]+))?'.format(ipaddr=regex_ip_address,mask=regex_mask)
 )
