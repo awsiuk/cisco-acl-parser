@@ -113,6 +113,12 @@ with open(f_in_name, "r", encoding="utf8") as f:
             temp_policy=copy.deepcopy(policy)
             if previous_policy_name!=temp_data["policy_name"]:
                 rule_count=1
+            #Below line add to the policy name a rule number since cisco has different approach for traffic filtering
+            #there are 2 approaches:
+            #1. create 1 policy per exact ACL name but keep adding into that policy a rules. Please note that cisco 
+            #   adds action after each rule
+            #2. create new policy per each ACL --> this is the approach teken here. it migbt be important for asset
+            #    management where tere mighe be multiple ownere for the rules.            
             temp_policy["policy-name"]=temp_data["policy_name"]+"#"+str(rule_count)
             temp_policy["source-address"].append(temp_data["source"])
             temp_policy["destination-address"].append(temp_data["destination"])
