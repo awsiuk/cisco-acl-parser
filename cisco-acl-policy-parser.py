@@ -89,6 +89,16 @@ acl_apply_to = (
     r'^access-group\s(?P<policy>[\w\-]+)\s(?P<direction>in|out)\sinterface\s(?P<zone>[\w\-]+)'
 )
 
+#converts the network mask into prefix. Takes argument as string and returns string
+def mask_convert(subnet_mask: str) -> str:
+    mask_obj=subnet_mask.split(".")
+    mask_bin=int(mask_obj[0])<<24
+    mask_bin|=(int(mask_obj[1])<<16)
+    mask_bin|=(int(mask_obj[2])<<8)
+    mask_bin|=(int(mask_obj[3]))
+    prefix="/"+str(str(bin(mask_bin)).count("1"))
+    return prefix
+
 #main script
 #Ensuring that there are arguments provided to the scrip and not let run without it
 parser = argparse.ArgumentParser(prog='cisco-acl-policy-parser',description='Script takes 1 argument of a config file (typically .conf) and outputs CSV file with ".csv" extension with the same name as orginal file.',epilog='by Lukasz Awsiukiewicz, biuro@la-tech.pl')
@@ -120,8 +130,14 @@ with open(f_in_name, "r", encoding="utf8") as f:
             #2. create new policy per each ACL --> this is the approach teken here. it migbt be important for asset
             #    management where tere mighe be multiple ownere for the rules.            
             temp_policy["policy-name"]=temp_data["policy_name"]+"#"+str(rule_count)
-            temp_policy["source-address"].append(temp_data["source"])
-            temp_policy["destination-address"].append(temp_data["destination"])
+            if ' ' in temp_data["source"]:
+                temp_policy["source-address"].append( temp_data["source"].split(" ")[0] + mask_convert(temp_data["source"].split(" ")[1]) )
+            else:
+                temp_policy["source-address"].append(temp_data["source"])
+            if ' ' in temp_data["destination"]:
+                temp_policy["destination-address"].append(temp_data["destination"].split(" ")[0]+ mask_convert(temp_data["destination"].split(" ")[1]) )
+            else:
+                temp_policy["destination-address"].append(temp_data["destination"])
             temp_policy["action"]=temp_data["action"]
             previous_policy_name=temp_data["policy_name"]
             if temp_data["service"]:
