@@ -1,4 +1,4 @@
-Script converts CISCO IOS Access Lists (ACL) from its config file to security policies in CSV format
+Script extracts CISCO IOS Access Lists (ACL) from its config file to security policies and export it to the CSV format.
 
 The script takes and argument of a file (-f/--file) that hols ! in its configuration content - typical IOS format.
 Script extracts security policies from the configuration file into CVS format file with fields separated by ';'.
