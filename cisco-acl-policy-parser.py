@@ -10,6 +10,7 @@ import os
 policies_set=[]
 services_set=[]
 hosts_set=[]
+zones_set=[]
 
 #define header for CVS, not used in any other purpose
 policy_description=['VSYS','from-zone','to-zone',"policy-name", 'source-address','destination-address','application','source-identity',"global-from-zone","global-to-zone","action","application-name","category","description","tag"]
@@ -47,6 +48,13 @@ host = {
     "address": []
 }
 
+#this is to grap "access-group" output and use to translate into proper security zone
+zones = {
+    "policy": "",
+    "direction": "",
+    "zone": ""
+}
+
 #not yet used
 acl_remark = (
     r'^access-list\s(?P<policy_name>[A-Za-z0-9\-\_]+)'
@@ -54,11 +62,11 @@ acl_remark = (
     r'remark\s+(?P<remark>.+)'
 )
 
-
 regex_ip_address = ( 
     r'([\d]{1,3}\.){3}[\d]{1,3}'
 )
 
+#IP subnet mask
 regex_mask = (
     r'(255\.255\.255\.[\d]{1,3})|(255\.255\.[\d]{1,3}\.0)|(255\.[\d]{1,3}\.0\.0)|([\d]{1,3}\.0\.0\.0)'
 )
@@ -75,6 +83,10 @@ acl_general_structure = (
     r'((host\s)|(object-group\s)|(object\s))?(?P<destination>((?<=host\s){ipaddr})|({ipaddr}\s({mask}))|any|[\w\.-]+)'
     r'(?:\s|$)'
     r'(?:(?:object-group|eq)?\s?(?P<service>[\w-]+))?'.format(ipaddr=regex_ip_address,mask=regex_mask)
+)
+
+acl_apply_to = (
+    r'^access-group\s(?P<policy>[\w\-]+)\s(?P<direction>in|out)\sinterface\s(?P<zone>[\w\-]+)'
 )
 
 #main script
@@ -116,6 +128,21 @@ with open(f_in_name, "r", encoding="utf8") as f:
                 temp_policy["application"].append("any")
             policies_set.append(temp_policy)
             rule_count+=1
+        result=re.match(acl_apply_to,line)
+        if result: 
+            temp_apply=result.groupdict()
+            temp_zone=copy.deepcopy(zones)
+            temp_zone["policy"]=temp_apply["policy"]
+            temp_zone["direction"]=temp_apply["direction"]
+            temp_zone["zone"]=temp_apply["zone"]
+            zones_set.append(temp_zone)
+
+for entry in policies_set:
+    for zone_obj in zones_set:
+        if zone_obj["policy"] == (entry["policy-name"].split('#')[0]) and zone_obj["direction"]=="in":
+            entry["from-zone"].append(zone_obj["zone"])
+        if zone_obj["policy"] == (entry["policy-name"].split('#')[0]) and zone_obj["direction"]=="out":
+            entry["to-zone"].append(zone_obj["zone"])
 
 with open(f_out_name,"w",newline='') as f:
     csv_writer = csv.DictWriter(f,fieldnames=policy_description,delimiter=';')
