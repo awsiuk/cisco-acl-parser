@@ -82,7 +82,7 @@ acl_general_structure = (
     r'\s'
     r'((host\s)|(object-group\s)|(object\s))?(?P<destination>((?<=host\s){ipaddr})|({ipaddr}\s({mask}))|any|[\w\.-]+)'
     r'(?:\s|$)'
-    r'(?:(?:object-group|eq|range)?\s?(?P<service>(?<!range\s)[\w-]+|(?<=range\s)(?:[\d]+\s[\d]+)))?'.format(ipaddr=regex_ip_address,mask=regex_mask)
+    r'(?:(?:object-group\s|eq\s|range\s)?(?P<service>(?<=eq\s)[\w-]+|(?<=object-group\s)[\w-]+|(?<=range\s)(?:[\d]+\s[\d]+)))?'.format(ipaddr=regex_ip_address,mask=regex_mask)
 )
 
 acl_apply_to = (
